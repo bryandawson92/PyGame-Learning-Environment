@@ -35,6 +35,7 @@ class BirdPlayer(pygame.sprite.Sprite):
         self.GRAVITY = 1.0 * self.scale
 
         self.rng = rng
+        self.rng.seed()
 
         self._oscillateStartPos()  # makes the direction and position random
         self.rect.center = (self.pos_x, self.pos_y)  # could be done better
