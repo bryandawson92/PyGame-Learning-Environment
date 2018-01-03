@@ -1,7 +1,8 @@
 try:
     from ple.games.doom import Doom
 except:
-    print("Couldn't import doom")
+    pass
+    #print("Couldn't import doom")
 from ple.games.catcher import Catcher
 from ple.games.flappybird import FlappyBird
 from ple.games.monsterkong import MonsterKong
