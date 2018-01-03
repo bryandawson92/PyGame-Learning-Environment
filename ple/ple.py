@@ -373,6 +373,12 @@ class PLE(object):
         """
         return sum(self._oneStepAct(action) for i in range(self.frame_skip))
 
+    def closeGame(self):
+        try:
+            self.game.close_game()
+        except:
+            print("Can't close window")
+
     def _draw_frame(self):
         """
         Decides if the screen will be drawn too

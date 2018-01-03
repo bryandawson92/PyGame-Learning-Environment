@@ -183,7 +183,7 @@ class FlappyBird(base.PyGameWrapper):
 
     """
 
-    def __init__(self, width=288, height=512, pipe_gap=100):
+    def __init__(self, width=288, height=512, pipe_gap=100, display_screen=True):
 
         actions = {
             "up": K_w
@@ -192,6 +192,10 @@ class FlappyBird(base.PyGameWrapper):
         fps = 30
 
         base.PyGameWrapper.__init__(self, width, height, actions=actions)
+        self.display_screen = display_screen
+        if self.display_screen == False:
+            os.putenv('SDL_VIDEODRIVER', 'fbcon')
+            os.environ["SDL_VIDEODRIVER"] = "dummy"
 
         self.scale = 30.0 / fps
 
@@ -433,8 +437,13 @@ class FlappyBird(base.PyGameWrapper):
 
         if self.lives <= 0:
             self.score += self.rewards["loss"]
+        
+        if self.display_screen:
+            self.backdrop.draw_background(self.screen)
+            self.pipe_group.draw(self.screen)
+            self.backdrop.update_draw_base(self.screen, dt)
+            self.player.draw(self.screen)
+    
+    def close_game(self):
+        pygame.display.quit()
 
-        self.backdrop.draw_background(self.screen)
-        self.pipe_group.draw(self.screen)
-        self.backdrop.update_draw_base(self.screen, dt)
-        self.player.draw(self.screen)
