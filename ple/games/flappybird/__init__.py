@@ -257,7 +257,7 @@ class FlappyBird(base.PyGameWrapper):
                 self.images["pipes"][c]["lower"], 180)
         
         if self.black_white:
-            path = os.path.join(self._asset_dir, "white_base.png")
+            path = os.path.join(self._asset_dir, "white-base.png")
             self.images["base"] = pygame.image.load(path).convert()
         else:
             path = os.path.join(self._asset_dir, "base.png")
