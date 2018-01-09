@@ -184,7 +184,7 @@ class FlappyBird(base.PyGameWrapper):
 
     """
 
-    def __init__(self, width=288, height=512, pipe_gap=100, display_screen=True):
+    def __init__(self, width=288, height=512, pipe_gap=100, display_screen=True, black_white=False):
 
         actions = {
             "up": K_w
@@ -194,6 +194,7 @@ class FlappyBird(base.PyGameWrapper):
 
         base.PyGameWrapper.__init__(self, width, height, actions=actions)
         self.display_screen = display_screen
+        self.black_white = black_white
         if self.display_screen == False:
             os.putenv('SDL_VIDEODRIVER', 'fbcon')
             os.environ["SDL_VIDEODRIVER"] = "dummy"
@@ -229,7 +230,7 @@ class FlappyBird(base.PyGameWrapper):
     def _load_images(self):
         # preload and convert all the images so its faster when we reset
         self.images["player"] = {}
-        for c in ["red", "blue", "yellow"]:
+        for c in ["red", "blue", "yellow", "white"]:
             image_assets = [
                 os.path.join(self._asset_dir, "%sbird-upflap.png" % c),
                 os.path.join(self._asset_dir, "%sbird-midflap.png" % c),
@@ -240,13 +241,13 @@ class FlappyBird(base.PyGameWrapper):
                 im).convert_alpha() for im in image_assets]
 
         self.images["background"] = {}
-        for b in ["day", "night"]:
+        for b in ["day", "night", "black"]:
             path = os.path.join(self._asset_dir, "background-%s.png" % b)
 
             self.images["background"][b] = pygame.image.load(path).convert()
 
         self.images["pipes"] = {}
-        for c in ["red", "green"]:
+        for c in ["red", "green", "white"]:
             path = os.path.join(self._asset_dir, "pipe-%s.png" % c)
 
             self.images["pipes"][c] = {}
@@ -254,9 +255,13 @@ class FlappyBird(base.PyGameWrapper):
                 path).convert_alpha()
             self.images["pipes"][c]["upper"] = pygame.transform.rotate(
                 self.images["pipes"][c]["lower"], 180)
-
-        path = os.path.join(self._asset_dir, "base.png")
-        self.images["base"] = pygame.image.load(path).convert()
+        
+        if self.black_white:
+            path = os.path.join(self._asset_dir, "white_base.png")
+            self.images["base"] = pygame.image.load(path).convert()
+        else:
+            path = os.path.join(self._asset_dir, "base.png")
+            self.images["base"] = pygame.image.load(path).convert()
 
     def init(self):
         if self.backdrop is None:
@@ -285,15 +290,21 @@ class FlappyBird(base.PyGameWrapper):
                 self._generatePipes(offset=-75 + self.width / 2),
                 self._generatePipes(offset=-75 + self.width * 1.5)
             ])
+        
+        if self.black_white:
+            background_color = "black"
+            pipe_color = "white"
+            player_color = "white"
+        else:
+            background_color = self.rng.choice(["day", "night"])
+            pipe_color = self.rng.choice(["red", "green"])
+            player_color = self.rng.choice(["red", "blue", "yellow"])
+        
+        self.backdrop.background_image = self.images["background"][background_color]
 
-        color = self.rng.choice(["day", "night"])
-        self.backdrop.background_image = self.images["background"][color]
+        self.player.init(self.init_pos, player_color)
 
-        # instead of recreating
-        color = self.rng.choice(["red", "blue", "yellow"])
-        self.player.init(self.init_pos, color)
-
-        self.pipe_color = self.rng.choice(["red", "green"])
+        self.pipe_color = pipe_color
         for i, p in enumerate(self.pipe_group):
             self._generatePipes(offset=self.pipe_offsets[i], pipe=p)
 
@@ -439,11 +450,10 @@ class FlappyBird(base.PyGameWrapper):
         if self.lives <= 0:
             self.score += self.rewards["loss"]
         
-        if self.display_screen:
-            self.backdrop.draw_background(self.screen)
-            self.pipe_group.draw(self.screen)
-            self.backdrop.update_draw_base(self.screen, dt)
-            self.player.draw(self.screen)
+        self.backdrop.draw_background(self.screen)
+        self.pipe_group.draw(self.screen)
+        self.backdrop.update_draw_base(self.screen, dt)
+        self.player.draw(self.screen)
     
     def close_game(self):
         pygame.display.quit()
